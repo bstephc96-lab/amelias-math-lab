@@ -3,23 +3,22 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Fun Math Steps</title>
+  <title>Visual Multiplication App</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="style.css">
 </head>
 <body class="bg-blue-50 min-h-screen flex items-center justify-center p-4">
   <div class="bg-white rounded-2xl shadow-xl p-6 max-w-xl w-full">
-    <h1 class="text-3xl font-bold text-center text-blue-600 mb-4">Fun Math Steps ✨</h1>
+    <h1 class="text-3xl font-bold text-center text-blue-600 mb-4">Visual Multiplication ✨</h1>
 
     <!-- Mode Selection -->
     <div class="grid grid-cols-2 gap-3 mb-4">
       <button onclick="setSection('learn-mult')" class="bg-green-500 text-white py-3 rounded-xl text-lg">Learn Multiplication</button>
       <button onclick="setSection('practice-mult')" class="bg-yellow-500 text-white py-3 rounded-xl text-lg">Practice Multiplication</button>
-      <button onclick="setSection('learn-div')" class="bg-purple-500 text-white py-3 rounded-xl text-lg">Learn Division</button>
-      <button onclick="setSection('practice-div')" class="bg-pink-500 text-white py-3 rounded-xl text-lg">Practice Division</button>
     </div>
 
-    <div id="content" class="text-center text-lg font-mono"></div>
+    <!-- Content Container -->
+    <div id="content" class="text-center font-mono"></div>
   </div>
 
   <script src="script.js"></script>
