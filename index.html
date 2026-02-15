@@ -1,26 +1,28 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Visual Multiplication App</title>
-  <script src="https://cdn.tailwindcss.com"></script>
-  <link rel="stylesheet" href="style.css">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Visual Math: Multiplication & Division</title>
+    <link rel="stylesheet" href="style.css">
 </head>
-<body class="bg-blue-50 min-h-screen flex items-center justify-center p-4">
-  <div class="bg-white rounded-2xl shadow-xl p-6 max-w-xl w-full">
-    <h1 class="text-3xl font-bold text-center text-blue-600 mb-4">Visual Multiplication ✨</h1>
+<body>
+    <header>
+        <h1>Visual Math Learner</h1>
+        <p>Practice multiplication and division with step-by-step visuals!</p>
+    </header>
 
-    <!-- Mode Selection -->
-    <div class="grid grid-cols-2 gap-3 mb-4">
-      <button onclick="setSection('learn-mult')" class="bg-green-500 text-white py-3 rounded-xl text-lg">Learn Multiplication</button>
-      <button onclick="setSection('practice-mult')" class="bg-yellow-500 text-white py-3 rounded-xl text-lg">Practice Multiplication</button>
-    </div>
+    <nav>
+        <button id="learnMulBtn" class="mode-btn active">Learn Multiplication</button>
+        <button id="practiceMulBtn" class="mode-btn">Practice Multiplication</button>
+        <button id="learnDivBtn" class="mode-btn">Learn Division</button>
+        <button id="practiceDivBtn" class="mode-btn">Practice Division</button>
+    </nav>
 
-    <!-- Content Container -->
-    <div id="content" class="text-center font-mono"></div>
-  </div>
+    <main id="content">
+        <!-- Dynamic content will be injected here -->
+    </main>
 
-  <script src="script.js"></script>
+    <script src="script.js"></script>
 </body>
 </html>
