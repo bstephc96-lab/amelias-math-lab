@@ -44,7 +44,7 @@ function setSection(section) {
   }
 }
 
-/* -------------------- LEARN MULTIPLICATION -------------------- */
+/* -------------------- LEARN MULTIPLICATION (MORE GRANULAR) -------------------- */
 
 function generateLearnExample() {
   const a = Math.floor(Math.random() * 50) + 10; // 10–59
@@ -69,21 +69,21 @@ function renderLearnMultiplication() {
       <div>× ${b} </div>
       <div>────────</div>
 
-      ${learnStep >= 1 ? `<div class="text-blue-600"> ${onesProduct} </div>` : `<div class="text-gray-300"> ____ </div>`}
+      ${learnStep >= 2 ? `<div class="text-blue-600"> ${onesProduct} </div>` : `<div class="text-gray-300"> ____ </div>`}
 
-      ${learnStep >= 2 ? `<div class="text-purple-600"> ${tensProduct}0 </div>` : `<div class="text-gray-300"> ____0 </div>`}
+      ${learnStep >= 4 ? `<div class="text-purple-600"> ${tensProduct}0 </div>` : `<div class="text-gray-300"> ____0 </div>`}
 
       <div>────────</div>
 
-      ${learnStep >= 3 ? `<div class="text-green-700 font-bold"> ${finalAnswer} </div>` : `<div class="text-gray-300"> ____ </div>`}
+      ${learnStep >= 5 ? `<div class="text-green-700 font-bold"> ${finalAnswer} </div>` : `<div class="text-gray-300"> ____ </div>`}
     </div>
 
-    <div class="text-lg mb-4">
+    <div class="text-lg mb-4 min-h-[80px]">
       ${getLearnExplanation(a, b, onesB, tensB, onesProduct, tensProduct, finalAnswer)}
     </div>
 
     <div class="flex gap-3 justify-center">
-      ${learnStep < 3 ? `<button onclick="nextLearnStep()" class="bg-blue-500 text-white px-6 py-2 rounded-xl">Next Step ➡️</button>` : ''}
+      ${learnStep < 5 ? `<button onclick="nextLearnStep()" class="bg-blue-500 text-white px-6 py-2 rounded-xl">Next Step ➡️</button>` : ''}
       <button onclick="generateLearnExample(); learnStep=0; renderLearnMultiplication();" class="bg-gray-500 text-white px-6 py-2 rounded-xl">Next Example 🔄</button>
     </div>
   `;
@@ -92,17 +92,21 @@ function renderLearnMultiplication() {
 }
 
 function getLearnExplanation(a, b, onesB, tensB, onesProduct, tensProduct, finalAnswer) {
-  if (learnStep === 0) {
-    return `First we multiply the ONES digit: ${onesB} × ${a}`;
-  }
-  if (learnStep === 1) {
-    return `${onesB} × ${a} = ${onesProduct}`;
-  }
-  if (learnStep === 2) {
-    return `Now multiply the TENS digit: ${tensB} × ${a}, then add a zero because it is the tens row!`;
-  }
-  if (learnStep === 3) {
-    return `${onesProduct} + ${tensProduct}0 = ${finalAnswer}`;
+  switch (learnStep) {
+    case 0:
+      return `Look at the bottom number ${b}. The ones digit is ${onesB}. We start with that.`;
+    case 1:
+      return `Now multiply the ones digit: ${onesB} × ${a}`;
+    case 2:
+      return `${onesB} × ${a} = ${onesProduct}. We write this on the first row.`;
+    case 3:
+      return `Next, move to the tens digit ${tensB}. This is really ${tensB} tens, so we will add a zero at the end.`;
+    case 4:
+      return `${tensB} × ${a} = ${tensProduct}. Because it is tens, we write ${tensProduct}0 on the second row.`;
+    case 5:
+      return `Finally, add the two rows: ${onesProduct} + ${tensProduct}0 = ${finalAnswer}`;
+    default:
+      return '';
   }
 }
 
