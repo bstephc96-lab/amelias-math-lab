@@ -3,245 +3,233 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Math Steps Fun!</title>
+  <title>Fun Math Steps</title>
   <script src="https://cdn.tailwindcss.com"></script>
 </head>
-<body class="bg-pink-50 min-h-screen font-sans">
-  <div class="max-w-3xl mx-auto p-4">
-    <h1 class="text-3xl font-bold text-center mb-2">🌟 Math Steps Fun! 🌟</h1>
-    <p class="text-center text-gray-600 mb-6">Learn big multiplication & long division step by step!</p>
+<body class="bg-blue-50 min-h-screen flex items-center justify-center p-4">
+  <div class="bg-white rounded-2xl shadow-xl p-6 max-w-xl w-full">
+    <h1 class="text-3xl font-bold text-center text-blue-600 mb-4">Fun Math Steps ✨</h1>
 
-    <!-- Mode Tabs -->
-    <div class="grid grid-cols-2 md:grid-cols-4 gap-2 mb-6">
-      <button onclick="setMode('learn-mult')" class="mode-btn">Learn ×</button>
-      <button onclick="setMode('practice-mult')" class="mode-btn">Practice ×</button>
-      <button onclick="setMode('learn-div')" class="mode-btn">Learn ÷</button>
-      <button onclick="setMode('practice-div')" class="mode-btn">Practice ÷</button>
+    <!-- Mode Selection -->
+    <div class="grid grid-cols-2 gap-3 mb-4">
+      <button onclick="setSection('learn-mult')" class="bg-green-500 text-white py-3 rounded-xl text-lg">Learn Multiplication</button>
+      <button onclick="setSection('practice-mult')" class="bg-yellow-500 text-white py-3 rounded-xl text-lg">Practice Multiplication</button>
+      <button onclick="setSection('learn-div')" class="bg-purple-500 text-white py-3 rounded-xl text-lg">Learn Division</button>
+      <button onclick="setSection('practice-div')" class="bg-pink-500 text-white py-3 rounded-xl text-lg">Practice Division</button>
     </div>
 
-    <!-- Content Card -->
-    <div class="bg-white rounded-2xl shadow p-6" id="content"></div>
+    <div id="content" class="text-center text-lg"></div>
   </div>
 
-  <script>
-    let mode = 'learn-mult';
-    let difficulty = 'easy';
+<script>
+let currentExample = null;
+let learnStep = 0;
 
-    // Interactive state
-    let stepIndex = 0;
-    let examples = [];
-    let exampleIndex = 0;
+function setSection(section) {
+  learnStep = 0;
 
-    function generateLearnExamples(){
-      examples = [
-        {a: rand(12,29), b: rand(11,29)},
-        {a: rand(21,39), b: rand(12,25)},
-        {a: rand(15,35), b: rand(20,40)}
-      ];
-      exampleIndex = 0;
-    }
+  if (section === 'learn-mult') {
+    generateLearnExample();
+    renderLearnMultiplication();
+  }
+  else if (section === 'practice-mult') {
+    generatePracticeExample();
+    renderPracticeMenu();
+  }
+  else if (section === 'learn-div') {
+    document.getElementById('content').innerHTML = `<p class="text-purple-700 text-xl">Division learning coming next! 🚌</p>`;
+  }
+  else if (section === 'practice-div') {
+    document.getElementById('content').innerHTML = `<p class="text-pink-700 text-xl">Division practice coming next! ✏️</p>`;
+  }
+}
 
-    function currentExample(){
-      return examples[exampleIndex];
-    }
+/* -------------------- LEARN MULTIPLICATION -------------------- */
 
-    function nextExample(){
-      exampleIndex = (exampleIndex + 1) % examples.length;
-      stepIndex = 0;
-      render();
-    }
+function generateLearnExample() {
+  const a = Math.floor(Math.random() * 50) + 10; // 10–59
+  const b = Math.floor(Math.random() * 90) + 10; // 10–99
+  currentExample = { a, b };
+}
 
-    function setMode(newMode) {
-      mode = newMode;
-      stepIndex = 0;
-      if(mode === 'learn-mult') generateLearnExamples();
-      render();
-    }
+function renderLearnMultiplication() {
+  const { a, b } = currentExample;
+  const onesB = b % 10;
+  const tensB = Math.floor(b / 10);
 
-    function setDifficulty(level) {
-      difficulty = level;
-      render();
-    }
+  const onesProduct = a * onesB;
+  const tensProduct = a * tensB;
+  const finalAnswer = a * b;
 
-    function renderDifficultySelector() {
-      return `
-        <div class="mb-4">
-          <p class="font-bold mb-2">Choose Difficulty:</p>
-          <div class="flex gap-2">
-            <button onclick="setDifficulty('easy')" class="diff-btn">Easy</button>
-            <button onclick="setDifficulty('medium')" class="diff-btn">Medium</button>
-            <button onclick="setDifficulty('hard')" class="diff-btn">Hard</button>
-          </div>
-        </div>
-      `;
-    }
+  const html = `
+    <h2 class="text-2xl font-bold text-green-600 mb-3">Let’s Learn Multiplication 🎓</h2>
 
-    function render() {
-      const content = document.getElementById('content');
+    <div class="text-3xl font-mono mb-4 leading-tight">
+      <div> ${a} </div>
+      <div>× ${b} </div>
+      <div>────────</div>
 
-      if (mode === 'learn-mult') {
-        renderColumnMultiplication(content);
-      }
+      ${learnStep >= 1 ? `<div class="text-blue-600"> ${onesProduct} </div>` : `<div class="text-gray-300"> ____ </div>`}
 
-      if (mode === 'practice-mult') {
-        const {a, b} = generateMultiplication();
-        content.innerHTML = `
-          <h2 class="text-2xl font-bold mb-2">Practice Multiplication</h2>
-          ${renderDifficultySelector()}
-          <p class="mb-4 text-xl">Solve: ${a} × ${b}</p>
-          <input id="answer" type="number" class="border p-2 rounded w-full mb-3" placeholder="Type your answer" />
-          <button onclick="checkMult(${a},${b})" class="bg-green-500 text-white px-4 py-2 rounded-xl">Check Answer</button>
-          <div id="feedback" class="mt-4 text-lg"></div>
-        `;
-      }
+      ${learnStep >= 2 ? `<div class="text-purple-600"> ${tensProduct}0 </div>` : `<div class="text-gray-300"> ____0 </div>`}
 
-      if (mode === 'learn-div') {
-        content.innerHTML = `
-          <h2 class="text-2xl font-bold mb-4">Learn Long Division (coming soon visually!)</h2>
-          <p class="text-lg">Next step will be a full visual bus-stop division layout.</p>
-        `;
-      }
+      <div>────────</div>
 
-      if (mode === 'practice-div') {
-        const {a, b} = generateDivision();
-        content.innerHTML = `
-          <h2 class="text-2xl font-bold mb-2">Practice Division</h2>
-          ${renderDifficultySelector()}
-          <p class="mb-4 text-xl">Solve: ${a} ÷ ${b}</p>
-          <input id="answer" type="number" class="border p-2 rounded w-full mb-3" placeholder="Type your answer" />
-          <button onclick="checkDiv(${a},${b})" class="bg-green-500 text-white px-4 py-2 rounded-xl">Check Answer</button>
-          <div id="feedback" class="mt-4 text-lg"></div>
-        `;
-      }
-    }
+      ${learnStep >= 3 ? `<div class="text-green-700 font-bold"> ${finalAnswer} </div>` : `<div class="text-gray-300"> ____ </div>`}
+    </div>
 
-    function highlight(cls, step){
-      return stepIndex === step ? cls : '';
-    }
+    <div class="text-lg mb-4">
+      ${getLearnExplanation(a, b, onesB, tensB, onesProduct, tensProduct, finalAnswer)}
+    </div>
 
-    function renderColumnMultiplication(content) {
-      const ex = currentExample();
-      const a = ex.a;
-      const b = ex.b;
+    <div class="flex gap-3 justify-center">
+      ${learnStep < 3 ? `<button onclick="nextLearnStep()" class="bg-blue-500 text-white px-6 py-2 rounded-xl">Next Step ➡️</button>` : ''}
+      <button onclick="generateLearnExample(); learnStep=0; renderLearnMultiplication();" class="bg-gray-500 text-white px-6 py-2 rounded-xl">Next Example 🔄</button>
+    </div>
+  `;
 
-      const aTens = Math.floor(a/10);
-      const aOnes = a%10;
-      const bTens = Math.floor(b/10);
-      const bOnes = b%10;
+  document.getElementById('content').innerHTML = html;
+}
 
-      const onesProduct = aOnes * bOnes;
-      const tensProduct = aTens * bOnes * 10;
-      const total = a * b;
+function getLearnExplanation(a, b, onesB, tensB, onesProduct, tensProduct, finalAnswer) {
+  if (learnStep === 0) {
+    return `First we multiply the ONES digit: ${onesB} × ${a}`;
+  }
+  if (learnStep === 1) {
+    return `${onesB} × ${a} = ${onesProduct}`;
+  }
+  if (learnStep === 2) {
+    return `Now multiply the TENS digit: ${tensB} × ${a}, then add a zero because it is the tens row!`;
+  }
+  if (learnStep === 3) {
+    return `${onesProduct} + ${tensProduct}0 = ${finalAnswer}`;
+  }
+}
 
-      const stepTexts = [
-        "First, line up the numbers in columns.",
-        `Multiply ones: ${aOnes} × ${bOnes} = ${onesProduct}`,
-        `Multiply tens: ${aTens*10} × ${bOnes} = ${tensProduct}`,
-        "Now add the rows to get the final answer!"
-      ];
+function nextLearnStep() {
+  learnStep++;
+  renderLearnMultiplication();
+}
 
-      content.innerHTML = `
-        <h2 class="text-2xl font-bold mb-2">Learn Column Multiplication</h2>
-        <p class="mb-4 text-lg">Example ${exampleIndex+1} of 3: ${a} × ${b}</p>
+/* -------------------- PRACTICE MULTIPLICATION -------------------- */
 
-        <div class="flex justify-center">
-          <div class="text-4xl font-mono bg-yellow-50 p-6 rounded-xl">
-            <div class="text-right">
-              <span class="${highlight('bg-pink-200 rounded px-1',1)}">${aTens}</span>
-              <span class="${highlight('bg-pink-200 rounded px-1',1)}">${aOnes}</span>
-            </div>
-            <div class="text-right border-b-4 border-black">
-              ×
-              <span class="${highlight('bg-blue-200 rounded px-1',1)}">${bTens}</span>
-              <span class="${highlight('bg-blue-200 rounded px-1',1)}">${bOnes}</span>
-            </div>
+let practiceMode = 'guided';
+let practiceStep = 0;
+let practiceExample = null;
 
-            <div class="text-right mt-4 h-12">
-              ${stepIndex>=1 ? onesProduct : ''}
-            </div>
-            <div class="text-right h-12">
-              ${stepIndex>=2 ? tensProduct : ''}
-            </div>
-            ${stepIndex>=3 ? `<div class="text-right border-t-4 border-black mt-2">${total}</div>` : ''}
-          </div>
-        </div>
+function generatePracticeExample() {
+  const a = Math.floor(Math.random() * 50) + 10;
+  const b = Math.floor(Math.random() * 90) + 10;
+  practiceExample = { a, b };
+  practiceStep = 0;
+}
 
-        <p class="mt-6 text-xl font-bold text-purple-700 text-center">
-          ${stepTexts[Math.min(stepIndex, stepTexts.length-1)]}
-        </p>
+function renderPracticeMenu() {
+  document.getElementById('content').innerHTML = `
+    <h2 class="text-2xl font-bold text-yellow-600 mb-4">Practice Multiplication ✏️</h2>
+    <p class="mb-4">Choose how you want to practice:</p>
+    <div class="flex gap-4 justify-center">
+      <button onclick="practiceMode='guided'; renderPracticeMultiplication();" class="bg-blue-500 text-white px-4 py-2 rounded-xl">Guided Steps</button>
+      <button onclick="practiceMode='free'; renderPracticeMultiplication();" class="bg-green-500 text-white px-4 py-2 rounded-xl">Fill All & Check</button>
+    </div>
+  `;
+}
 
-        <div class="mt-6 flex justify-center gap-3">
-          <button onclick="nextStep()" class="bg-pink-500 text-white px-6 py-3 rounded-xl text-lg">Next Step ➡️</button>
-          <button onclick="resetSteps()" class="bg-gray-300 px-6 py-3 rounded-xl text-lg">Reset</button>
-          <button onclick="nextExample()" class="bg-blue-500 text-white px-6 py-3 rounded-xl text-lg">Next Example 🔄</button>
-        </div>
-      `;
-    }
+function renderPracticeMultiplication() {
+  const { a, b } = practiceExample;
 
-    function nextStep(){
-      stepIndex++;
-      render();
-    }
+  const onesB = b % 10;
+  const tensB = Math.floor(b / 10);
 
-    function resetSteps(){
-      stepIndex = 0;
-      render();
-    }
+  const onesProduct = a * onesB;
+  const tensProduct = a * tensB;
+  const finalAnswer = a * b;
 
-    function generateMultiplication() {
-      if (difficulty === 'easy') {
-        return { a: rand(2,9), b: rand(2,9) };
-      }
-      if (difficulty === 'medium') {
-        return { a: rand(10,99), b: rand(2,9) };
-      }
-      return { a: rand(10,99), b: rand(10,99) };
-    }
+  document.getElementById('content').innerHTML = `
+    <h2 class="text-2xl font-bold text-yellow-600 mb-3">Your Turn! 💪</h2>
 
-    function generateDivision() {
-      if (difficulty === 'easy') {
-        const b = rand(2,9);
-        return { a: b * rand(2,9), b };
-      }
-      if (difficulty === 'medium') {
-        const b = rand(2,9);
-        return { a: b * rand(10,20), b };
-      }
-      const b = rand(3,12);
-      return { a: b * rand(10,30), b };
-    }
+    <div class="text-3xl font-mono mb-4 leading-tight">
+      <div> ${a} </div>
+      <div>× ${b} </div>
+      <div>────────</div>
 
-    function rand(min,max){ return Math.floor(Math.random()*(max-min+1))+min; }
+      <input id="onesRow" class="border w-32 text-center text-2xl mb-1" placeholder="ones row" />
+      <input id="tensRow" class="border w-32 text-center text-2xl mb-1" placeholder="tens row" />
 
-    function checkMult(a,b) {
-      const user = parseInt(document.getElementById('answer').value);
-      const correct = a*b;
-      const fb = document.getElementById('feedback');
-      if (user === correct) {
-        fb.innerHTML = '🎉 Correct! Great job!';
+      <div>────────</div>
+      <input id="finalRow" class="border w-32 text-center text-2xl" placeholder="answer" />
+    </div>
+
+    <div id="practiceHint" class="mb-3 text-lg"></div>
+
+    <div class="flex gap-3 justify-center">
+      <button onclick="checkPractice(${a}, ${b}, ${onesProduct}, ${tensProduct}, ${finalAnswer})" class="bg-blue-500 text-white px-6 py-2 rounded-xl">Check Answer ✔️</button>
+      <button onclick="generatePracticeExample(); renderPracticeMenu();" class="bg-gray-500 text-white px-6 py-2 rounded-xl">New Problem 🔄</button>
+    </div>
+  `;
+
+  if (practiceMode === 'guided') {
+    updatePracticeHint(a, b, onesB, tensB);
+  }
+}
+
+function updatePracticeHint(a, b, onesB, tensB) {
+  if (practiceStep === 0) {
+    document.getElementById('practiceHint').innerText = `Step 1: Multiply the ones digit: ${onesB} × ${a}`;
+  } else if (practiceStep === 1) {
+    document.getElementById('practiceHint').innerText = `Step 2: Multiply the tens digit: ${tensB} × ${a}, then remember to add a zero!`;
+  } else {
+    document.getElementById('practiceHint').innerText = `Step 3: Add the two rows together`;
+  }
+}
+
+function checkPractice(a, b, onesProduct, tensProduct, finalAnswer) {
+  const onesInput = document.getElementById('onesRow').value.trim();
+  const tensInput = document.getElementById('tensRow').value.trim();
+  const finalInput = document.getElementById('finalRow').value.trim();
+
+  if (practiceMode === 'guided') {
+    if (practiceStep === 0) {
+      if (parseInt(onesInput) === onesProduct) {
+        practiceStep = 1;
+        updatePracticeHint(a, b, b % 10, Math.floor(b/10));
+        alert('Great! Now do the tens row 🎉');
       } else {
-        fb.innerHTML = `Almost! The correct answer is ${correct}`;
+        alert('Try again! Multiply the ones digit carefully 😊');
       }
+      return;
     }
 
-    function checkDiv(a,b) {
-      const user = parseInt(document.getElementById('answer').value);
-      const correct = Math.floor(a/b);
-      const fb = document.getElementById('feedback');
-      if (user === correct) {
-        fb.innerHTML = '🎉 Correct! Well done!';
+    if (practiceStep === 1) {
+      if (parseInt(tensInput) === tensProduct * 10) {
+        practiceStep = 2;
+        updatePracticeHint(a, b, b % 10, Math.floor(b/10));
+        alert('Awesome! Now add both rows ✨');
       } else {
-        fb.innerHTML = `Good try! The correct answer is ${correct}`;
+        alert('Remember: multiply then add a zero for the tens row!');
       }
+      return;
     }
 
-    generateLearnExamples();
-    render();
-  </script>
-
-  <style>
-    .mode-btn { @apply bg-purple-500 text-white rounded-xl p-3 font-bold hover:bg-purple-600; }
-    .diff-btn { @apply bg-yellow-400 text-black px-3 py-1 rounded-xl font-bold hover:bg-yellow-500; }
-  </style>
+    if (practiceStep === 2) {
+      if (parseInt(finalInput) === finalAnswer) {
+        alert('Correct!!! 🌟 You did the full column multiplication!');
+      } else {
+        alert('Almost! Add the two rows carefully 😊');
+      }
+    }
+  } else {
+    if (
+      parseInt(onesInput) === onesProduct &&
+      parseInt(tensInput) === tensProduct * 10 &&
+      parseInt(finalInput) === finalAnswer
+    ) {
+      alert('Perfect! 🎉');
+    } else {
+      alert('Check each row again 👍');
+    }
+  }
+}
+</script>
 </body>
 </html>
