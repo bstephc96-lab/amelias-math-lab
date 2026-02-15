@@ -27,8 +27,13 @@
     let mode = 'learn-mult';
     let difficulty = 'easy';
 
+    // Interactive state for column multiplication
+    let stepIndex = 0;
+    let currentExample = { a: 25, b: 80 };
+
     function setMode(newMode) {
       mode = newMode;
+      stepIndex = 0;
       render();
     }
 
@@ -54,12 +59,7 @@
       const content = document.getElementById('content');
 
       if (mode === 'learn-mult') {
-        content.innerHTML = `
-          <h2 class="text-2xl font-bold mb-4">Learn Big Multiplication (Column Method)</h2>
-          <p class="mb-4">Example: 25 × 80</p>
-          <button onclick="walkMultiplication(25,80)" class="bg-pink-500 text-white px-4 py-2 rounded-xl">Show Steps</button>
-          <div id="steps" class="mt-4 text-lg"></div>
-        `;
+        renderColumnMultiplication(content);
       }
 
       if (mode === 'practice-mult') {
@@ -76,10 +76,8 @@
 
       if (mode === 'learn-div') {
         content.innerHTML = `
-          <h2 class="text-2xl font-bold mb-4">Learn Long Division</h2>
-          <p class="mb-4">Example: 84 ÷ 4</p>
-          <button onclick="walkDivision(84,4)" class="bg-blue-500 text-white px-4 py-2 rounded-xl">Show Steps</button>
-          <div id="steps" class="mt-4 text-lg"></div>
+          <h2 class="text-2xl font-bold mb-4">Learn Long Division (visual coming next!)</h2>
+          <p class="text-lg">We will build an interactive long division layout next.</p>
         `;
       }
 
@@ -94,6 +92,77 @@
           <div id="feedback" class="mt-4 text-lg"></div>
         `;
       }
+    }
+
+    function highlight(cls, step){
+      return stepIndex === step ? cls : '';
+    }
+
+    function renderColumnMultiplication(content) {
+      const a = currentExample.a;
+      const b = currentExample.b;
+
+      const aTens = Math.floor(a/10);
+      const aOnes = a%10;
+      const bTens = Math.floor(b/10);
+      const bOnes = b%10;
+
+      const partial1 = aOnes * bOnes;
+      const partial2 = aTens * bOnes * 10;
+      const total = a * b;
+
+      const stepTexts = [
+        "First, line up the numbers in columns.",
+        `Multiply the ones: ${aOnes} × ${bOnes}`,
+        `Now multiply the tens: ${aTens*10} × ${bOnes}`,
+        "Add the rows together to get the final answer!"
+      ];
+
+      content.innerHTML = `
+        <h2 class="text-2xl font-bold mb-4">Learn Column Multiplication</h2>
+        <p class="mb-4 text-lg">Example: ${a} × ${b}</p>
+
+        <div class="flex justify-center">
+          <div class="text-4xl font-mono bg-yellow-50 p-6 rounded-xl">
+            <div class="text-right">
+              <span class="${highlight('bg-pink-200 rounded px-1',1)}">${aTens}</span>
+              <span class="${highlight('bg-pink-200 rounded px-1',1)}">${aOnes}</span>
+            </div>
+            <div class="text-right border-b-4 border-black">
+              ×
+              <span class="${highlight('bg-blue-200 rounded px-1',1)}">${bTens}</span>
+              <span class="${highlight('bg-blue-200 rounded px-1',1)}">${bOnes}</span>
+            </div>
+
+            <div class="text-right mt-4 h-12">
+              ${stepIndex>=1 ? partial1 : ''}
+            </div>
+            <div class="text-right h-12">
+              ${stepIndex>=2 ? partial2 : ''}
+            </div>
+            ${stepIndex>=3 ? `<div class="text-right border-t-4 border-black mt-2">${total}</div>` : ''}
+          </div>
+        </div>
+
+        <p class="mt-6 text-xl font-bold text-purple-700 text-center">
+          ${stepTexts[Math.min(stepIndex, stepTexts.length-1)]}
+        </p>
+
+        <div class="mt-6 flex justify-center gap-3">
+          <button onclick="nextStep()" class="bg-pink-500 text-white px-6 py-3 rounded-xl text-lg">Next Step ➡️</button>
+          <button onclick="resetSteps()" class="bg-gray-300 px-6 py-3 rounded-xl text-lg">Reset</button>
+        </div>
+      `;
+    }
+
+    function nextStep(){
+      stepIndex++;
+      render();
+    }
+
+    function resetSteps(){
+      stepIndex = 0;
+      render();
     }
 
     function generateMultiplication() {
@@ -120,38 +189,6 @@
     }
 
     function rand(min,max){ return Math.floor(Math.random()*(max-min+1))+min; }
-
-    function walkMultiplication(a,b) {
-      const stepsDiv = document.getElementById('steps');
-      const tens = Math.floor(a/10);
-      const ones = a%10;
-
-      const step1 = ones * b;
-      const step2 = tens * b * 10;
-      const total = step1 + step2;
-
-      stepsDiv.innerHTML = `
-        <p>Step 1: Break ${a} into tens and ones → ${tens*10} and ${ones}</p>
-        <p>Step 2: Multiply ones: ${ones} × ${b} = <strong>${step1}</strong></p>
-        <p>Step 3: Multiply tens: ${tens*10} × ${b} = <strong>${step2}</strong></p>
-        <p>Step 4: Add them together: ${step1} + ${step2} = <strong>${total}</strong></p>
-        <p class="mt-3 text-pink-600 font-bold">Answer: ${a} × ${b} = ${total}</p>
-      `;
-    }
-
-    function walkDivision(a,b) {
-      const stepsDiv = document.getElementById('steps');
-      const first = Math.floor(a/b);
-      const remainder = a % b;
-
-      stepsDiv.innerHTML = `
-        <p>Step 1: Ask "How many times does ${b} go into ${a}?"</p>
-        <p>Step 2: ${b} goes into ${a} = <strong>${first}</strong> times</p>
-        <p>Step 3: Multiply: ${first} × ${b} = ${first*b}</p>
-        <p>Step 4: Subtract: ${a} - ${first*b} = ${remainder}</p>
-        <p class="mt-3 text-blue-600 font-bold">Answer: ${a} ÷ ${b} = ${first} remainder ${remainder}</p>
-      `;
-    }
 
     function checkMult(a,b) {
       const user = parseInt(document.getElementById('answer').value);
