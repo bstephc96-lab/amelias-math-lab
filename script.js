@@ -3,6 +3,7 @@ let currentMode = 'learnMul';
 let currentExample = {};
 let currentStep = 0;
 let isGuided = true;
+let difficultyLevel = 'medium'; // easy, medium, hard
 
 // DOM elements
 const contentEl = document.getElementById('content');
@@ -34,17 +35,30 @@ function switchMode(mode) {
     generateNewExample();
 }
 
-// Generate random example
+// Generate random example with different difficulty levels
 function generateNewExample() {
     if (currentMode.startsWith('learnMul') || currentMode.startsWith('practiceMul')) {
-        // Easy: 1-digit (2-9) × 2-digit (10-99)
-        const num1 = Math.floor(Math.random() * 90) + 10; // 10-99 (multiplicand)
-        const num2 = Math.floor(Math.random() * 8) + 2;   // 2-9 (multiplier)
+        let num1, num2;
+        
+        // Mix of difficulty levels for variety
+        const difficulties = ['easy', 'medium'];
+        const selectedDifficulty = difficulties[Math.floor(Math.random() * difficulties.length)];
+        
+        if (selectedDifficulty === 'easy') {
+            // Single digit × two digit: 23 × 4
+            num1 = Math.floor(Math.random() * 90) + 10; // 10-99
+            num2 = Math.floor(Math.random() * 8) + 2;   // 2-9
+        } else {
+            // Two digit × two digit: 87 × 34
+            num1 = Math.floor(Math.random() * 90) + 10; // 10-99
+            num2 = Math.floor(Math.random() * 90) + 10; // 10-99
+        }
         
         currentExample = {
             multiplicand: num1,
             multiplier: num2,
             product: num1 * num2,
+            difficulty: selectedDifficulty,
             steps: calculateMultiplicationSteps(num1, num2)
         };
     } else {
@@ -64,117 +78,141 @@ function generateNewExample() {
     renderCurrentView();
 }
 
-// Fixed multiplication steps calculation
+// Enhanced multiplication steps for multi-digit
 function calculateMultiplicationSteps(multiplicand, multiplier) {
     const steps = [];
     const multiplicandStr = multiplicand.toString();
+    const multiplierStr = multiplier.toString();
     
-    if (multiplicandStr.length === 2) {
-        // Two-digit × one-digit
-        const tens = parseInt(multiplicandStr[0]);
-        const ones = parseInt(multiplicandStr[1]);
+    if (multiplierStr.length === 1) {
+        // Single digit multiplier (like 87 × 4)
+        return calculateSingleDigitSteps(multiplicand, multiplier);
+    } else {
+        // Multi-digit multiplier (like 87 × 34)
+        return calculateMultiDigitSteps(multiplicand, multiplier);
+    }
+}
+
+function calculateSingleDigitSteps(multiplicand, multiplier) {
+    const steps = [];
+    const multiplicandStr = multiplicand.toString();
+    
+    // Work from right to left
+    let carry = 0;
+    let result = '';
+    
+    for (let i = multiplicandStr.length - 1; i >= 0; i--) {
+        const digit = parseInt(multiplicandStr[i]);
+        const product = digit * multiplier + carry;
+        const resultDigit = product % 10;
+        carry = Math.floor(product / 10);
         
-        // Step 1: ones × multiplier
-        const onesProduct = ones * multiplier;
-        const onesDigit = onesProduct % 10;
-        const carry1 = Math.floor(onesProduct / 10);
+        const position = i === multiplicandStr.length - 1 ? 'ones' : 
+                        i === multiplicandStr.length - 2 ? 'tens' : 'hundreds';
         
         steps.push({
-            description: `${ones} × ${multiplier} = ${onesProduct}`,
-            digit: onesDigit,
-            carry: carry1,
-            position: 'ones'
+            description: `${digit} × ${multiplier}${carry > resultDigit ? ` + ${carry - Math.floor((digit * multiplier)/10)} (carry)` : ''} = ${product}`,
+            digit: resultDigit,
+            carry: carry,
+            position: position,
+            type: 'multiply'
         });
         
-        // Step 2: tens × multiplier + carry
-        const tensProduct = tens * multiplier + carry1;
-        const tensDigit = tensProduct % 10;
-        const carry2 = Math.floor(tensProduct / 10);
-        
+        result = resultDigit + result;
+    }
+    
+    if (carry > 0) {
         steps.push({
-            description: `${tens} × ${multiplier} + ${carry1} (carry) = ${tensProduct}`,
-            digit: tensDigit,
-            carry: carry2,
-            position: 'tens'
+            description: `Write final carry: ${carry}`,
+            digit: carry,
+            carry: 0,
+            position: 'final',
+            type: 'carry'
         });
-        
-        if (carry2 > 0) {
-            steps.push({
-                description: `Final carry`,
-                digit: carry2,
-                carry: 0,
-                position: 'hundreds'
-            });
-        }
     }
     
     return steps;
 }
 
-// Fixed rendering with proper alignment
+function calculateMultiDigitSteps(multiplicand, multiplier) {
+    const steps = [];
+    const multiplierStr = multiplier.toString();
+    const partialProducts = [];
+    
+    // Calculate each partial product
+    for (let i = multiplierStr.length - 1; i >= 0; i--) {
+        const digit = parseInt(multiplierStr[i]);
+        const position = multiplierStr.length - 1 - i; // 0 for ones, 1 for tens, etc.
+        const partialProduct = multiplicand * digit * Math.pow(10, position);
+        
+        partialProducts.push({
+            digit: digit,
+            position: position === 0 ? 'ones' : position === 1 ? 'tens' : 'hundreds',
+            product: partialProduct,
+            displayProduct: partialProduct.toString()
+        });
+        
+        steps.push({
+            description: `${multiplicand} × ${digit} (${position === 0 ? 'ones' : position === 1 ? 'tens' : 'hundreds'} place) = ${multiplicand * digit}${position > 0 ? ` × ${Math.pow(10, position)} = ${partialProduct}` : ''}`,
+            type: 'partial',
+            partialProduct: partialProduct,
+            multiplierDigit: digit,
+            position: position === 0 ? 'ones' : position === 1 ? 'tens' : 'hundreds'
+        });
+    }
+    
+    // Final addition step
+    steps.push({
+        description: `Add partial products: ${partialProducts.map(p => p.product).join(' + ')} = ${multiplicand * multiplier}`,
+        type: 'addition',
+        partialProducts: partialProducts,
+        finalAnswer: multiplicand * multiplier
+    });
+    
+    return steps;
+}
+
+// Enhanced rendering for multi-digit
 function renderLearnMultiplication() {
-    const { multiplicand, multiplier, product, steps } = currentExample;
+    const { multiplicand, multiplier, product, steps, difficulty } = currentExample;
+    
+    if (!steps[currentStep]) {
+        currentStep = 0;
+    }
+    
     const step = steps[currentStep];
     
     let html = `
         <div class="instructions">
-            ${step ? `Step ${currentStep + 1}: ${step.description}. Write ${step.digit} and carry ${step.carry || 0}.` : 'Click Next Step to begin!'}
+            <strong>${difficulty === 'easy' ? 'Single-digit' : 'Multi-digit'} Multiplication:</strong><br>
+            ${step ? `Step ${currentStep + 1}: ${step.description}` : 'Click Next Step to begin!'}
         </div>
     `;
     
-    // Create aligned math display
     html += '<div class="math-display">';
     
-    // Line 1: Multiplicand (right-aligned)
+    // Problem setup
+    const maxWidth = Math.max(multiplicand.toString().length, multiplier.toString().length, product.toString().length) + 2;
+    
     html += `<div class="math-line">`;
-    html += `<span class="number-part">${multiplicand.toString().padStart(4)}</span>`;
+    html += `<span class="number-part" style="min-width: ${maxWidth * 15}px;">${multiplicand.toString().padStart(maxWidth)}</span>`;
     html += `</div>`;
     
-    // Line 2: × Multiplier
     html += `<div class="math-line">`;
-    html += `<span class="operator">×</span><span class="number-part">${multiplier.toString().padStart(3)}</span>`;
+    html += `<span class="operator">×</span><span class="number-part" style="min-width: ${maxWidth * 15}px;">${multiplier.toString().padStart(maxWidth - 1)}</span>`;
     html += `</div>`;
     
-    // Line 3: Divider
     html += `<div class="math-line">`;
-    html += `<span class="divider">────</span>`;
+    html += `<span class="divider">${'─'.repeat(maxWidth + 1)}</span>`;
     html += `</div>`;
     
-    // Show carries above the answer line
-    if (currentStep > 0) {
-        let carryLine = '    '; // Start with spaces
-        for (let i = 0; i < currentStep; i++) {
-            if (steps[i].carry > 0) {
-                carryLine = steps[i].carry + carryLine.slice(1);
-            }
-        }
-        html += `<div class="math-line carry-row">`;
-        html += `<span class="number-part">${carryLine}</span>`;
-        html += `</div>`;
-    }
-    
-    // Answer line (build progressively)
-    let answerDisplay = '';
-    if (currentStep === steps.length) {
-        // Show final answer
-        answerDisplay = product.toString();
-    } else if (currentStep > 0) {
-        // Show partial answer
-        let partial = '';
-        for (let i = 0; i < currentStep; i++) {
-            partial = steps[i].digit + partial;
-        }
-        // Add carries
-        for (let i = currentStep; i < steps.length && steps[i].carry > 0; i++) {
-            partial = steps[i].carry + partial;
-        }
-        answerDisplay = partial;
-    }
-    
-    if (answerDisplay) {
-        html += `<div class="math-line ${currentStep === steps.length ? 'final-answer' : ''}">`;
-        html += `<span class="number-part">${answerDisplay.padStart(4)}</span>`;
-        html += `</div>`;
+    // Show progression based on step type
+    if (difficulty === 'easy') {
+        // Single digit multiplication - show carries and building answer
+        renderSingleDigitSteps(html, steps, currentStep, maxWidth);
+    } else {
+        // Multi-digit multiplication - show partial products
+        renderMultiDigitSteps(html, steps, currentStep, maxWidth);
     }
     
     html += '</div>'; // Close math-display
@@ -184,6 +222,9 @@ function renderLearnMultiplication() {
     if (currentStep < steps.length) {
         html += `<button onclick="nextStep()">Next Step</button>`;
     }
+    if (currentStep === steps.length) {
+        html += `<span class="final-result">Final Answer: <strong>${product}</strong></span>`;
+    }
     html += `<button onclick="generateNewExample()">New Example</button>`;
     html += `</div>`;
     
@@ -192,21 +233,82 @@ function renderLearnMultiplication() {
     contentEl.innerHTML = html;
 }
 
+function renderSingleDigitSteps(html, steps, currentStep, maxWidth) {
+    // Show carries
+    if (currentStep > 0) {
+        let carryDisplay = '';
+        for (let i = 0; i < currentStep; i++) {
+            if (steps[i].carry > 0) {
+                carryDisplay = steps[i].carry + ' ' + carryDisplay;
+            }
+        }
+        if (carryDisplay.trim()) {
+            html += `<div class="math-line carry-row">`;
+            html += `<span class="number-part" style="min-width: ${maxWidth * 15}px; color: #FF9800;">${carryDisplay.padStart(maxWidth)}</span>`;
+            html += `</div>`;
+        }
+    }
+    
+    // Build answer progressively
+    if (currentStep > 0) {
+        let answerSoFar = '';
+        for (let i = 0; i < Math.min(currentStep, steps.length); i++) {
+            if (steps[i].type === 'multiply') {
+                answerSoFar = steps[i].digit + answerSoFar;
+            } else if (steps[i].type === 'carry') {
+                answerSoFar = steps[i].digit + answerSoFar;
+            }
+        }
+        
+        html += `<div class="math-line ${currentStep === steps.length ? 'final-answer' : ''}">`;
+        html += `<span class="number-part" style="min-width: ${maxWidth * 15}px;">${answerSoFar.padStart(maxWidth)}</span>`;
+        html += `</div>`;
+    }
+}
+
+function renderMultiDigitSteps(html, steps, currentStep, maxWidth) {
+    // Show partial products as they're calculated
+    let partialsShown = 0;
+    
+    for (let i = 0; i <= currentStep && i < steps.length; i++) {
+        if (steps[i].type === 'partial') {
+            html += `<div class="math-line partial-product">`;
+            html += `<span class="number-part" style="min-width: ${maxWidth * 15}px;">${steps[i].partialProduct.toString().padStart(maxWidth)}</span>`;
+            html += `</div>`;
+            partialsShown++;
+        }
+    }
+    
+    // Show addition line if we're at the addition step
+    if (currentStep === steps.length - 1 && steps[currentStep].type === 'addition') {
+        html += `<div class="math-line">`;
+        html += `<span class="divider">${'─'.repeat(maxWidth + 1)}</span>`;
+        html += `</div>`;
+        
+        html += `<div class="math-line final-answer">`;
+        html += `<span class="number-part" style="min-width: ${maxWidth * 15}px;">${steps[currentStep].finalAnswer.toString().padStart(maxWidth)}</span>`;
+        html += `</div>`;
+    }
+}
+
 function renderPracticeMultiplication() {
-    contentEl.innerHTML = `
-        <div class="instructions">Practice Mode - Enter each digit as you calculate</div>
+    const { multiplicand, multiplier, product } = currentExample;
+    const maxWidth = Math.max(multiplicand.toString().length, multiplier.toString().length, product.toString().length) + 2;
+    
+    let html = `
+        <div class="instructions">Practice Mode - Calculate: ${multiplicand} × ${multiplier}</div>
         <div class="math-display">
             <div class="math-line">
-                <span class="number-part">${currentExample.multiplicand.toString().padStart(4)}</span>
+                <span class="number-part" style="min-width: ${maxWidth * 15}px;">${multiplicand.toString().padStart(maxWidth)}</span>
             </div>
             <div class="math-line">
-                <span class="operator">×</span><span class="number-part">${currentExample.multiplier.toString().padStart(3)}</span>
+                <span class="operator">×</span><span class="number-part" style="min-width: ${maxWidth * 15}px;">${multiplier.toString().padStart(maxWidth - 1)}</span>
             </div>
             <div class="math-line">
-                <span class="divider">────</span>
+                <span class="divider">${'─'.repeat(maxWidth + 1)}</span>
             </div>
             <div class="math-line">
-                <input type="text" class="answer-input" maxlength="4" placeholder="Answer" oninput="checkPracticeAnswer()">
+                <input type="text" class="answer-input" style="width: ${maxWidth * 15}px;" maxlength="${product.toString().length + 1}" placeholder="Your answer" oninput="checkPracticeAnswer()">
             </div>
         </div>
         <div class="controls">
@@ -215,6 +317,8 @@ function renderPracticeMultiplication() {
         </div>
         <div id="feedback" class="feedback"></div>
     `;
+    
+    contentEl.innerHTML = html;
 }
 
 function renderLearnDivision() {
@@ -266,9 +370,9 @@ function nextStep() {
 function checkPracticeAnswer() {
     const input = document.querySelector('.answer-input');
     if (input && parseInt(input.value) === currentExample.product) {
-        showFeedback('correct', `Correct! ${currentExample.multiplicand} × ${currentExample.multiplier} = ${currentExample.product}`);
+        showFeedback('correct', `Excellent! ${currentExample.multiplicand} × ${currentExample.multiplier} = ${currentExample.product}`);
     } else {
-        showFeedback('incorrect', 'Try again!');
+        showFeedback('incorrect', `Not quite right. Try again! Hint: Break it down step by step.`);
     }
 }
 
