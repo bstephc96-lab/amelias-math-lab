@@ -1,28 +1,28 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Visual Math: Multiplication & Division</title>
-    <link rel="stylesheet" href="style.css">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Visual Math Steps</title>
+  <link rel="stylesheet" href="style.css"/>
 </head>
 <body>
-    <header>
-        <h1>Visual Math Learner</h1>
-        <p>Practice multiplication and division with step-by-step visuals!</p>
-    </header>
+  <div class="app">
+    <h1>Visual Math Steps ✨</h1>
 
-    <nav>
-        <button id="learnMulBtn" class="mode-btn active">Learn Multiplication</button>
-        <button id="practiceMulBtn" class="mode-btn">Practice Multiplication</button>
-        <button id="learnDivBtn" class="mode-btn">Learn Division</button>
-        <button id="practiceDivBtn" class="mode-btn">Practice Division</button>
-    </nav>
+    <div class="mode-buttons">
+      <button onclick="setMode('learn-mult')">Learn Multiplication</button>
+      <button onclick="setMode('practice-mult')">Practice Multiplication</button>
+      <button onclick="setMode('learn-div')">Learn Division</button>
+      <button onclick="setMode('practice-div')">Practice Division</button>
+    </div>
 
-    <main id="content">
-        <!-- Dynamic content will be injected here -->
-    </main>
+    <div id="difficulty-controls"></div>
+    <div id="instruction"></div>
+    <div id="content"></div>
+    <div id="controls"></div>
+  </div>
 
-    <script src="script.js"></script>
+  <script src="script.js"></script>
 </body>
 </html>
